@@ -3,45 +3,9 @@ using System.IO;
 
 public class Solution
 {
-    internal static void Main1()
+    internal static void Main()
     {
         Problem.Solve(Console.In, Console.Out);
-    }
-
-    public static void Main()
-    {
-
-        const int m = 300;
-        const int n = 300;
-        const int r = 1000000000;
-        File.Delete("biginput.txt");
-        using (var writer = File.CreateText("biginput.txt"))
-        {
-            writer.WriteLine("{0} {1} {2}", m, n, r);
-
-            int element = 100000000 - m * n - 1;
-            for (int row = 0; row < m; row++)
-            {
-                writer.Write(element);
-                element++;
-                for (int column = 1; column < n; column++)
-                {
-                    writer.Write(" " + element);
-                    element++;
-                }
-
-                writer.WriteLine();
-            }
-        }
-
-        using (var reader = File.OpenText("biginput.txt"))
-        {
-            File.Delete("bigoutput.txt");
-            using (var writer = File.CreateText("bigoutput.txt"))
-            {
-                Problem.Solve(reader, writer);
-            }
-        }
     }
 }
 
@@ -228,7 +192,7 @@ public class PositionOnMatrix
     {
         PositionOnMatrix rotatedPosition = this;
 
-
+        numberOfRotations = OptimizeNumberOfRotations(numberOfRotations);
         ActionExtensions.Repeat(() =>
         {
             rotatedPosition = rotatedPosition.RotateOnce();
@@ -238,34 +202,24 @@ public class PositionOnMatrix
         return rotatedPosition;
     }
 
-    public int Level()
+    private int OptimizeNumberOfRotations(int originalNumberOfRotations)
     {
-        int invertedLevel;
-        int position;
-        int limit;
-        if (RowCount < ColumnCount)
-        {
-            position = Row;
-            limit = RowCount / 2;
+        return originalNumberOfRotations % CycleLength();
+    }
 
-        }
-        else
-        {
-            position = Column;
-            limit = ColumnCount / 2;
-        }
+    internal int CycleLength()
+    {
+        return 2*RowCount + 2*ColumnCount - 8*Depth() - 4;
+    }
 
-        var diff = position - limit;
-        if (diff < 0)
-        {
-            invertedLevel = -diff - 1;
-        }
-        else
-        {
-            invertedLevel = diff;
-        }
+    internal int Depth()
+    {
+        int dist1 = Row;
+        int dist2 = Column;
+        int dist3 = RowCount - Row - 1;
+        int dist4 = ColumnCount - Column - 1;
 
-        return limit - invertedLevel - 1;
+        return Math.Min(Math.Min(dist1, dist2), Math.Min(dist3, dist4));
     }
 
     private PositionOnMatrix RotateOnce()

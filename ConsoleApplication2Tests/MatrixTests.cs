@@ -1,7 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
+﻿using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Tests
+namespace MatrixRotationTests
 {
     [TestClass]
     public class MatrixTests
@@ -81,27 +81,86 @@ namespace Tests
 
 
         [TestMethod]
-        public void TestLevel()
+        public void DepthTest()
         {
-            var matrix = new Matrix<int>(5, 4);
+            var matrix = new Matrix<int>(7, 6);
 
             var writer = new StringWriter();
 
             var newMatrix = matrix.Transform((r, c) =>
             {
-                return new PositionOnMatrix(r, c, matrix.RowCount, matrix.ColumnCount).Level();
+                return new PositionOnMatrix(r, c, matrix.RowCount, matrix.ColumnCount).Depth();
             });
 
             newMatrix.Write(writer);
 
             Assert.AreEqual(
-@"0 0 0 0
-0 1 1 0
-0 1 1 0
-0 1 1 0
-0 0 0 0", writer.ToString().Trim());
+@"0 0 0 0 0 0
+0 1 1 1 1 0
+0 1 2 2 1 0
+0 1 2 2 1 0
+0 1 2 2 1 0
+0 1 1 1 1 0
+0 0 0 0 0 0", writer.ToString().Trim());
         }
 
+        [TestMethod]
+        public void CycleLengthTest()
+        {
+            var matrix = new Matrix<int>(7, 6);
+
+            var writer = new StringWriter();
+
+            var newMatrix = matrix.Transform((r, c) => new PositionOnMatrix(r, c, matrix.RowCount, matrix.ColumnCount).CycleLength());
+
+            newMatrix.Write(writer);
+
+            Assert.AreEqual(
+@"22 22 22 22 22 22
+22 14 14 14 14 22
+22 14 6 6 14 22
+22 14 6 6 14 22
+22 14 6 6 14 22
+22 14 14 14 14 22
+22 22 22 22 22 22", writer.ToString().Trim());
+        }
+
+        [TestMethod]
+        public void BigMatrixTest()
+        {
+
+            const int m = 300;
+            const int n = 300;
+            const int r = 1000000000;
+            File.Delete("biginput.txt");
+            using (var writer = File.CreateText("biginput.txt"))
+            {
+                writer.WriteLine("{0} {1} {2}", m, n, r);
+
+                int element = 100000000 - m * n - 1;
+                for (int row = 0; row < m; row++)
+                {
+                    writer.Write(element);
+                    element++;
+                    for (int column = 1; column < n; column++)
+                    {
+                        writer.Write(" " + element);
+                        element++;
+                    }
+
+                    writer.WriteLine();
+                }
+            }
+
+            using (var reader = File.OpenText("biginput.txt"))
+            {
+                File.Delete("bigoutput.txt");
+                using (var writer = File.CreateText("bigoutput.txt"))
+                {
+                    Problem.Solve(reader, writer);
+                }
+            }
+        }
         private void Test(string input, string expectedOutput)
         {
             var reader = new StringReader(input);
