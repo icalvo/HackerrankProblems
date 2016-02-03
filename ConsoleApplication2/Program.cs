@@ -57,8 +57,12 @@ public static class Problem
         rotatedMatrix.Write(writer);
     }
 
+}
 
-    private static void Write<T>(this Matrix<T> matrix, TextWriter output)
+public static class MatrixExtensions
+{
+
+    public static void Write<T>(this Matrix<T> matrix, TextWriter output)
     {
         for (int r = 0; r < matrix.RowCount; r++)
         {
@@ -73,7 +77,6 @@ public static class Problem
     }
 
 }
-
 public class MatrixRotationInput
 {
     private MatrixRotationInput(int rotations, Matrix<string> matrix)
@@ -186,6 +189,21 @@ public class Matrix<T>
         var rotatedPosition = position.Rotate(numberOfRotations);
         return _values[rotatedPosition.Row, rotatedPosition.Column];
     }
+
+    public Matrix<T> Transform(Func<int, int, T> func)
+    {
+        var result = new Matrix<T>(RowCount, ColumnCount);
+
+        for (int row = 0; row < RowCount; row++)
+        {
+            for (int column = 0; column < ColumnCount; column++)
+            {
+                result[row, column] = func(row, column);
+            }
+        }
+
+        return result;
+    }
 }
 
 public class PositionOnMatrix
@@ -208,9 +226,8 @@ public class PositionOnMatrix
 
     public PositionOnMatrix Rotate(int numberOfRotations)
     {
-
-
         PositionOnMatrix rotatedPosition = this;
+
 
         ActionExtensions.Repeat(() =>
         {
@@ -219,6 +236,36 @@ public class PositionOnMatrix
         numberOfRotations);
 
         return rotatedPosition;
+    }
+
+    public int Level()
+    {
+        int invertedLevel;
+        int position;
+        int limit;
+        if (RowCount < ColumnCount)
+        {
+            position = Row;
+            limit = RowCount / 2;
+
+        }
+        else
+        {
+            position = Column;
+            limit = ColumnCount / 2;
+        }
+
+        var diff = position - limit;
+        if (diff < 0)
+        {
+            invertedLevel = -diff - 1;
+        }
+        else
+        {
+            invertedLevel = diff;
+        }
+
+        return limit - invertedLevel - 1;
     }
 
     private PositionOnMatrix RotateOnce()

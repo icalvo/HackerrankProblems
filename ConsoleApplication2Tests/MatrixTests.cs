@@ -78,6 +78,30 @@ namespace Tests
 2 12 11 10 18 19 20 30
 1 9 17 25 26 27 28 29");
         }
+
+
+        [TestMethod]
+        public void TestLevel()
+        {
+            var matrix = new Matrix<int>(5, 4);
+
+            var writer = new StringWriter();
+
+            var newMatrix = matrix.Transform((r, c) =>
+            {
+                return new PositionOnMatrix(r, c, matrix.RowCount, matrix.ColumnCount).Level();
+            });
+
+            newMatrix.Write(writer);
+
+            Assert.AreEqual(
+@"0 0 0 0
+0 1 1 0
+0 1 1 0
+0 1 1 0
+0 0 0 0", writer.ToString().Trim());
+        }
+
         private void Test(string input, string expectedOutput)
         {
             var reader = new StringReader(input);
